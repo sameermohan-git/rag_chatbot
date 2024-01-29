@@ -3,7 +3,7 @@ pdfplumber
 openai
 pinecone-client
 streamlit-chat
-farm-haystack
+langchain
 langchain-community
 langchain-openai
-langchain
+python-dotenv
