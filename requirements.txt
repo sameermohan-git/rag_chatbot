@@ -6,3 +6,4 @@ streamlit-chat
 farm-haystack
 langchain-community
 langchain-openai
+langchain
