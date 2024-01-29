@@ -1,0 +1,18 @@
+{
+    "IsEncrypted": false,
+    "Values": {
+      "FUNCTIONS_WORKER_RUNTIME": "python",
+      "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+      "AzureWebJobsFeatureFlags": "EnableWorkerIndexing",
+      "PGVECTOR_PASSWORD": "5xjcY",
+      "PGVECTOR_DATABASE": "penopenai",
+      "PGVECTOR_USER": "penopenai_user",
+      "PGVECTOR_HOST": "o1.postgres.database.azure.com",
+      "PGVECTOR_PORT": "5432",
+      "OPENAI_API_KEY": "",
+      "OPENAI_API_BASE": "https://omaeupa.openai.azure.com/",
+      "AZURE_CLIENT_ID": "dfc",
+      "AZURE_TENANT_ID": "f6",
+      "AZURE_STORAGE_CONTAINER_SAS_TOKEN":"?"
+    }
+  }
