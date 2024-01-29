@@ -1,0 +1,8 @@
+streamlit
+pdfplumber
+openai
+pinecone-client
+streamlit-chat
+farm-haystack
+langchain-community
+langchain-openai
