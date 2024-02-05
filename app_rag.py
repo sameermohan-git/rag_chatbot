@@ -55,7 +55,8 @@ def main():
 ##########################
 
 def cs_body():
-
+    st.title("💬 Level5 Strategy Chatbot")
+    st.caption("🚀 aisemble chatbot powered by OpenAI LLM")
     if 'chat_history' not in st.session_state:
         st.session_state.chat_history = []
     if 'pdf_processed' not in st.session_state:
@@ -79,7 +80,7 @@ def cs_body():
             else:
                 message(text, is_user=True, key=f"msg-{idx}")
 
-        st.text_input("Enter your question here:", key="user_input", on_change=handle_enter)
+        st.text_input("How can I help you?", key="user_input", on_change=handle_enter)
 
         if st.session_state.user_input:
             handle_enter()
