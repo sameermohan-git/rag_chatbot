@@ -92,11 +92,11 @@ def cs_sidebar():
     st.sidebar.markdown('''[<img src='data:image/png;base64,{}' class='img-fluid' width=32 height=32>](https://level5strategy.com/)'''.format(img_to_bytes("images/L5Logo.png")), unsafe_allow_html=True)
     st.sidebar.header('Upload Pdf')
 
-    uploaded_file = st.file_uploader("Upload your PDF here", type="pdf")
+    uploaded_file = st.sidebar.file_uploader("Upload your PDF here", type="pdf")
     if uploaded_file:
         file_name = uploaded_file.name
         if not has_been_processed(file_name):
-            with st.spinner("Processing PDF..."):
+            with st.sidebar.spinner("Processing PDF..."):
                 pages = extract_text_from_pdf(uploaded_file)
                 embeddings_model = OpenAIEmbeddings(openai_api_key=openai.api_key)
                 vectordb = embed_and_store(pages, embeddings_model)
