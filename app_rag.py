@@ -89,7 +89,7 @@ def cs_body():
 # sidebar
 def cs_sidebar():
 
-    st.sidebar.markdown('''[<img src='data:image/svg;base64,{}' class='img-fluid' width=32 height=32>](https://level5strategy.com/)'''.format(img_to_bytes("images/L5Logo.svg")), unsafe_allow_html=True)
+    st.sidebar.markdown('''[<img src='data:image/svg;base64,{}' class='img-fluid' width=32 height=32>](https://level5strategy.com/)'''.format(img_to_bytes("/images/L5Logo.svg")), unsafe_allow_html=True)
     st.sidebar.header('Upload Pdf')
 
     uploaded_file = st.file_uploader("Upload your PDF here", type="pdf")
