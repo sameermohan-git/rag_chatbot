@@ -17,6 +17,8 @@ from langchain_community.vectorstores import Pinecone
 #import utils
 import openai
 from dotenv import load_dotenv, find_dotenv
+from pathlib import Path
+import base64
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
@@ -33,6 +35,85 @@ pinecone_environment = 'gcp-starter'
 
 pc = pinecone.Pinecone(api_key=PINECONE_API_KEY)     
 index = pc.Index(PINECONE_INDEX_NAME)
+
+# Initial page config
+
+st.set_page_config(
+     page_title='Ask me anything about your data!',
+     layout="wide",
+     initial_sidebar_state="expanded",
+)
+
+def main():
+    #st.title("Ask a PDF Questions")
+    cs_sidebar()
+    cs_body()
+
+
+##########################
+# Main body of Chat bot
+##########################
+
+def cs_body():
+
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []
+    if 'pdf_processed' not in st.session_state:
+        st.session_state.pdf_processed = False
+    if 'user_input' not in st.session_state:
+        st.session_state.user_input = ""
+    
+    if 'retriever' not in st.session_state:
+        with st.spinner("Loading existing data..."):
+            index_name = PINECONE_INDEX_NAME
+            embeddings = OpenAIEmbeddings(openai_api_key=openai.api_key)
+            docsearch = Pinecone.from_existing_index(index_name, embeddings)
+            st.session_state.retriever = docsearch.as_retriever()
+        #st.info("PDF already processed. Using existing data.")
+        st.session_state.pdf_processed = True
+    
+    if st.session_state.pdf_processed:
+        for idx, (speaker, text) in enumerate(st.session_state.chat_history):
+            if speaker == "Bot":
+                message(text, key=f"msg-{idx}")
+            else:
+                message(text, is_user=True, key=f"msg-{idx}")
+
+        st.text_input("Enter your question here:", key="user_input", on_change=handle_enter)
+
+        if st.session_state.user_input:
+            handle_enter()
+
+    return None
+
+# sidebar
+def cs_sidebar():
+
+    st.sidebar.markdown('''[<img src='data:image/png;base64,{}' class='img-fluid' width=32 height=32>](https://level5strategy.com/)'''.format(img_to_bytes("images/L5Logo.svg")), unsafe_allow_html=True)
+    st.sidebar.header('Upload Pdf')
+
+    uploaded_file = st.file_uploader("Upload your PDF here", type="pdf")
+    if uploaded_file:
+        file_name = uploaded_file.name
+        if not has_been_processed(file_name):
+            with st.spinner("Processing PDF..."):
+                pages = extract_text_from_pdf(uploaded_file)
+                embeddings_model = OpenAIEmbeddings(openai_api_key=openai.api_key)
+                vectordb = embed_and_store(pages, embeddings_model)
+                st.session_state.retriever = vectordb.as_retriever()
+                mark_as_processed(file_name)
+                st.success("PDF Processed and Stored!")
+                st.session_state.pdf_processed = True
+        else:
+            if 'retriever' not in st.session_state:
+                with st.spinner("Loading existing data..."):
+                    index_name = PINECONE_INDEX_NAME
+                    embeddings = OpenAIEmbeddings(openai_api_key=openai.api_key)
+                    docsearch = Pinecone.from_existing_index(index_name, embeddings)
+                    st.session_state.retriever = docsearch.as_retriever()
+                st.info("PDF already processed. Using existing data.")
+                st.session_state.pdf_processed = True
+    return None
 
 
 def extract_text_from_pdf(uploaded_file):
@@ -87,50 +168,10 @@ def handle_enter():
                     st.session_state.chat_history.append(("Bot", f"Error - {e}"))
             st.session_state.user_input = ""  # Clear the input box after processing
 
-def main():
-    st.title("Ask a PDF Questions")
-
-    if 'chat_history' not in st.session_state:
-        st.session_state.chat_history = []
-    if 'pdf_processed' not in st.session_state:
-        st.session_state.pdf_processed = False
-    if 'user_input' not in st.session_state:
-        st.session_state.user_input = ""
-
-    uploaded_file = st.file_uploader("Upload your PDF here", type="pdf")
-
-    if uploaded_file:
-        file_name = uploaded_file.name
-        if not has_been_processed(file_name):
-            with st.spinner("Processing PDF..."):
-                pages = extract_text_from_pdf(uploaded_file)
-                embeddings_model = OpenAIEmbeddings(openai_api_key=openai.api_key)
-                vectordb = embed_and_store(pages, embeddings_model)
-                st.session_state.retriever = vectordb.as_retriever()
-                mark_as_processed(file_name)
-                st.success("PDF Processed and Stored!")
-                st.session_state.pdf_processed = True
-        else:
-            if 'retriever' not in st.session_state:
-                with st.spinner("Loading existing data..."):
-                    index_name = PINECONE_INDEX_NAME
-                    embeddings = OpenAIEmbeddings(openai_api_key=openai.api_key)
-                    docsearch = Pinecone.from_existing_index(index_name, embeddings)
-                    st.session_state.retriever = docsearch.as_retriever()
-                st.info("PDF already processed. Using existing data.")
-                st.session_state.pdf_processed = True
-    
-    if st.session_state.pdf_processed:
-        for idx, (speaker, text) in enumerate(st.session_state.chat_history):
-            if speaker == "Bot":
-                message(text, key=f"msg-{idx}")
-            else:
-                message(text, is_user=True, key=f"msg-{idx}")
-
-        st.text_input("Enter your question here:", key="user_input", on_change=handle_enter)
-
-        if st.session_state.user_input:
-            handle_enter()
+def img_to_bytes(img_path):
+    img_bytes = Path(img_path).read_bytes()
+    encoded = base64.b64encode(img_bytes).decode()
+    return encoded
 
 if __name__ == "__main__":
     main()
