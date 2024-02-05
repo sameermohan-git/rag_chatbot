@@ -80,7 +80,7 @@ def cs_body():
             else:
                 message(text, is_user=True, key=f"msg-{idx}")
 
-        st.text_input("How can I help you?", key="user_input", on_change=handle_enter, placeholder="Your AI assistant here! Ask me anything")
+        st.text_input(key="user_input", on_change=handle_enter, placeholder="Your AI assistant here! Ask me anything")
 
         if st.session_state.user_input:
             handle_enter()
