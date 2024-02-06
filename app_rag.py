@@ -114,6 +114,8 @@ def cs_sidebar():
                     st.session_state.retriever = docsearch.as_retriever()
                     st.info("PDF already processed. Using existing data.")
                     st.session_state.pdf_processed = True
+            else:
+                st.sidebar.info("PDF already processed!")
     return None
 
 
