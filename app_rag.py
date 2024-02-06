@@ -112,8 +112,8 @@ def cs_sidebar():
                     embeddings = OpenAIEmbeddings(openai_api_key=openai.api_key)
                     docsearch = Pinecone.from_existing_index(index_name, embeddings)
                     st.session_state.retriever = docsearch.as_retriever()
-                st.sidebar.info("PDF already processed. Using existing data.")
-                st.session_state.pdf_processed = True
+                    st.info("PDF already processed. Using existing data.")
+                    st.session_state.pdf_processed = True
     return None
 
 
