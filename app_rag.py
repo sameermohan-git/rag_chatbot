@@ -107,7 +107,7 @@ def cs_sidebar():
                 st.session_state.pdf_processed = True
         else:
             if 'retriever' not in st.session_state:
-                with st.spinner("Loading existing data..."):
+                with st.sidebar.spinner("Loading existing data..."):
                     index_name = PINECONE_INDEX_NAME
                     embeddings = OpenAIEmbeddings(openai_api_key=openai.api_key)
                     docsearch = Pinecone.from_existing_index(index_name, embeddings)
