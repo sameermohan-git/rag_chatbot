@@ -103,7 +103,7 @@ def cs_sidebar():
                 vectordb = embed_and_store(pages, embeddings_model)
                 st.session_state.retriever = vectordb.as_retriever()
                 mark_as_processed(file_name)
-                st.success("PDF Processed and Stored!")
+                st.sidebar.success("PDF Processed and Stored!")
                 st.session_state.pdf_processed = True
         else:
             if 'retriever' not in st.session_state:
@@ -112,7 +112,7 @@ def cs_sidebar():
                     embeddings = OpenAIEmbeddings(openai_api_key=openai.api_key)
                     docsearch = Pinecone.from_existing_index(index_name, embeddings)
                     st.session_state.retriever = docsearch.as_retriever()
-                st.info("PDF already processed. Using existing data.")
+                st.sidebar.info("PDF already processed. Using existing data.")
                 st.session_state.pdf_processed = True
     return None
 
