@@ -97,7 +97,7 @@ def cs_sidebar():
     if uploaded_file:
         file_name = uploaded_file.name
         if not has_been_processed(file_name):
-            with st.sidebar.spinner("Processing PDF..."):
+            with st.spinner("Processing PDF..."):
                 pages = extract_text_from_pdf(uploaded_file)
                 embeddings_model = OpenAIEmbeddings(openai_api_key=openai.api_key)
                 vectordb = embed_and_store(pages, embeddings_model)
@@ -107,7 +107,7 @@ def cs_sidebar():
                 st.session_state.pdf_processed = True
         else:
             if 'retriever' not in st.session_state:
-                with st.sidebar.spinner("Loading existing data..."):
+                with st.spinner("Loading existing data..."):
                     index_name = PINECONE_INDEX_NAME
                     embeddings = OpenAIEmbeddings(openai_api_key=openai.api_key)
                     docsearch = Pinecone.from_existing_index(index_name, embeddings)
