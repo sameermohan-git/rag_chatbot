@@ -4,19 +4,18 @@ import os
 import random
 #from question_generator import generate_questions
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import OpenAIEmbeddings
-from langchain_community.document_loaders import UnstructuredFileLoader
 from langchain_openai import ChatOpenAI
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.document_loaders import UnstructuredFileLoader
+from langchain_community.vectorstores import Pinecone as PineconeStore
 from langchain.chains.question_answering import load_qa_chain
-from langchain.chains import RetrievalQA
 from langchain.chains import ConversationalRetrievalChain
 from langchain.prompts import PromptTemplate
+
 from streamlit_chat import message
 
 import pinecone
-from langchain_community.vectorstores import Pinecone as PineconeStore
 
-#import utils
 import openai
 from dotenv import load_dotenv, find_dotenv
 from pathlib import Path
