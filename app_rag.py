@@ -16,6 +16,8 @@ from streamlit_chat import message
 import pinecone
 from langchain_community.vectorstores import Pinecone as PineconeStore
 
+
+from data_parser import DataParser
 #import utils
 import openai
 from dotenv import load_dotenv, find_dotenv
@@ -209,7 +211,8 @@ def handle_enter():
                                                         verbose=True)
                     result = qa({"question": user_input, "chat_history": st.session_state.chat_history})
                     sources = [doc.metadata for doc in result["source_documents"]]
-                    st.session_state.chat_history.append(("Bot", result["answer"]+ '\n'+ result["source_documents"]))
+                    source_formatted = DataParser.parse_source_detail_response(sources)
+                    st.session_state.chat_history.append(("Bot", result["answer"]+ '\n metadata:' + {str(source_formatted)}))
                 except Exception as e:
                     st.session_state.chat_history.append(("Bot", f"Error - {e}"))
             st.session_state.user_input = ""  # Clear the input box after processing
