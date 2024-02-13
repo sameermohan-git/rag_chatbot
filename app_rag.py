@@ -210,7 +210,7 @@ def handle_enter():
                     sources = [doc.metadata for doc in result["source_documents"]] 
                     message("sources:" ,sources)
                     response = result["answer"]
-                    response += "\nSource - "
+                    response += "\n\nSource - "
                     response += str(sources)
                     st.session_state.chat_history.append(("Bot", response))
                 except Exception as e:

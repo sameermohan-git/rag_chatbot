@@ -9,4 +9,4 @@ langchain-openai
 python-dotenv
 unstructured==0.10.27
 unstructured[all-docs]
-tiktoken==0.5.1
+tiktoken
