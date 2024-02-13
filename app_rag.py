@@ -5,7 +5,7 @@ import random
 #from question_generator import generate_questions
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import OpenAIEmbeddings
-from langchain.document_loaders import UnstructuredFileLoader
+from langchain_community.document_loaders import UnstructuredFileLoader
 from langchain_openai import ChatOpenAI
 from langchain.chains.question_answering import load_qa_chain
 from langchain.chains import RetrievalQA
