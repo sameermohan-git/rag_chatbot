@@ -15,7 +15,7 @@ class Configuration:
     AZURE_AD_AUDIENCE = f"api://{AZURE_CLIENT_ID}"
 
     AZURE_STORAGE_CONTAINER_SAS_TOKEN = os.getenv("AZURE_STORAGE_CONTAINER_SAS_TOKEN")
-    AZURE_STORAGE_ACCOUNT_URL = os.getenv("AZURE_STORAGE_ACCOUNT_URL","https://omaccpaidfuncst01.blob.core.windows.net")
+    AZURE_STORAGE_ACCOUNT_URL = os.getenv("AZURE_STORAGE_ACCOUNT_URL","https:/funcst01.blob.core.windows.net")
     AZURE_STORAGE_CONTAINER_NAME = os.getenv("AZURE_STORAGE_CONTAINER_NAME","openai-kb-upload")
     AZURE_STORAGE_CONTAINER_LATEST_FILE_PATH = os.getenv("AZURE_STORAGE_CONTAINER_LATEST_FILE_PATH","latest/")
     AZURE_STORAGE_CONTAINER_ARCHIVE_FILE_PATH = os.getenv("AZURE_STORAGE_CONTAINER_ARCHIVE_FILE_PATH","archive/")
@@ -31,34 +31,34 @@ class Configuration:
     ################# OPENAI Settings ##############################################################################
 
     ################# DB Settings ##################################################################################
-    PGVECTOR_SCHEMA = os.getenv("PGVECTOR_SCHEMA", "penopenai")
-    PGVECTOR_DATABASE = os.getenv("PGVECTOR_DATABASE", "penopenai")
-    PGVECTOR_USER = os.getenv("PGVECTOR_USER", "penopenai_user")
+    PGVECTOR_SCHEMA = os.getenv("PGVECTOR_SCHEMA", "pgnopenai")
+    PGVECTOR_DATABASE = os.getenv("PGVECTOR_DATABASE", "pgnopenai")
+    PGVECTOR_USER = os.getenv("PGVECTOR_USER", "pgnopenai_user")
     PGVECTOR_HOST = os.getenv("PGVECTOR_HOST")
     PGVECTOR_PORT = os.getenv("PGVECTOR_PORT", "5432")
-    PGVECTOR_COLLECTION_NAME = os.getenv("PGVECTOR_COLLECTION_NAME", "pensions_onq")
+    PGVECTOR_COLLECTION_NAME = os.getenv("PGVECTOR_COLLECTION_NAME", "pg_collection")
     PGVECTOR_PASSWORD = os.getenv("PGVECTOR_PASSWORD")
 
     PG_LANGCHAIN_CONNECTION_STRING = f"postgresql+psycopg2://{PGVECTOR_USER}:{PGVECTOR_PASSWORD}@{PGVECTOR_HOST}:{PGVECTOR_PORT}/{PGVECTOR_DATABASE}?options=-csearch_path%3D{PGVECTOR_SCHEMA},public&sslmode=require"
     PG_CONNECTION_STRING = "host='%s' dbname='%s' user='%s' password='%s' sslmode='require' port='%s'" % (PGVECTOR_HOST, PGVECTOR_DATABASE, PGVECTOR_USER, PGVECTOR_PASSWORD, PGVECTOR_PORT)
     
-    EMBEDDINGS_DELETE_QUERY = "DELETE FROM penopenai.langchain_pg_embedding WHERE cmetadata->>'source' LIKE %s;"
-    EMBEDDINGS_COUNT_QUERY = "SELECT COUNT(*) FROM penopenai.langchain_pg_embedding WHERE cmetadata->>'source' LIKE %s;"
+    EMBEDDINGS_DELETE_QUERY = "DELETE FROM pgnopenai.langchain_pg_embedding WHERE cmetadata->>'source' LIKE %s;"
+    EMBEDDINGS_COUNT_QUERY = "SELECT COUNT(*) FROM pgnopenai.langchain_pg_embedding WHERE cmetadata->>'source' LIKE %s;"
     INTERACTION_AUDIT_LOG_INSERT_QUERY = '''INSERT INTO openai_interaction_audit_log (start_timestamp, end_timestamp, user_query, context, model_response, prompt_token,    
                                          completion_token, total_token, prompt, feedback, conversation_history, metadata, status, interaction_detail) 
                                          VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) 
                                          RETURNING interaction_id;'''
-    OPENAI_UPLOAD_BATCH_INSERT_QUERY = '''INSERT INTO penopenai.openai_upload_batch(batch_start_timestamp, batch_end_timestamp, batch_upload_status, created_by, updated_by, updated_date)
+    OPENAI_UPLOAD_BATCH_INSERT_QUERY = '''INSERT INTO pgnopenai.openai_upload_batch(batch_start_timestamp, batch_end_timestamp, batch_upload_status, created_by, updated_by, updated_date)
                                          VALUES (%s, %s, %s, %s, %s, %s)
                                          RETURNING openai_upload_batch_id;'''
-    OPENAI_UPLOAD_BATCH_UPLOAD_QUERY = '''UPDATE penopenai.openai_upload_batch
+    OPENAI_UPLOAD_BATCH_UPLOAD_QUERY = '''UPDATE pgnopenai.openai_upload_batch
                                                  SET batch_end_timestamp=%s, batch_upload_status=%s, updated_by=%s, updated_date=%s
                                                  WHERE openai_upload_batch_id=%s;'''
-    OPENAI_UPLOAD_FILE_INSERT_QUERY = '''INSERT INTO penopenai.openai_upload_file(
+    OPENAI_UPLOAD_FILE_INSERT_QUERY = '''INSERT INTO pgnopenai.openai_upload_file(
                                          openai_upload_batch_id, upload_source_file_name, upload_destination_file_name, file_page_count, file_upload_status, upload_file_timestamp)
                                          VALUES (%s, %s, %s, %s, %s, %s)
                                           RETURNING openai_upload_file_id;'''
-    OPENAI_UPLOAD_FILE_UPDATE_QUERY = '''UPDATE penopenai.openai_upload_file
+    OPENAI_UPLOAD_FILE_UPDATE_QUERY = '''UPDATE pgnopenai.openai_upload_file
                                          SET upload_destination_file_name=%s, file_page_count=%s, file_upload_status=%s,upload_file_timestamp=%s
                                          WHERE openai_upload_file_id=%s;'''
     ### Following columns belongs to OPENAI_UPLOAD_FILE table
@@ -70,18 +70,8 @@ class Configuration:
     ################# DB Settings ####################################################################################
 
     ################# APPLICATION Settings ###########################################################################
-    APPLICATION_REFERENCE_FILES_INDEX = os.getenv("APPLICATION_REFERENCE_FILES_INDEX",["myOMERS_reference_guide.pdf",
-                "Buy-backs (OnQ).pdf", "Adjustments.pdf", 
-            "Estimates (OnQ).pdf", "LiveChat_Responses.pdf", 
-            "Retirements (OnQ).pdf", "Terminations (OnQ).pdf",
-            "Employer information (OnQ).pdf", "Closed plan consolidation (OnQ).pdf",
-            "Survivor benefits (OnQ).pdf", "Plan changes (OnQ).pdf", "Plan basics (OnQ).pdf",
-            "Omission periods (OnQ).pdf", "NRA conversion (OnQ).pdf",
-            "Marriage breakdown (OnQ).pdf", "Leave periods (OnQ).pdf",
-            "Interplan transfers (OnQ).pdf", "General procedures (OnQ).pdf",
-            "Enrolment and onboarding (OnQ).pdf", "Divestments (OnQ).pdf",
-            "Disabilities (OnQ).pdf", "BRUCE job aids and procedures (OnQ).pdf", "AVCs (OnQ).pdf",
-            "bruce_input.csv", "Existing Quick Text Replies.csv"])
+    APPLICATION_REFERENCE_FILES_INDEX = os.getenv("APPLICATION_REFERENCE_FILES_INDEX",["hgg.pdf",
+                "ABC.pdf", "abc1.pdf"])
     
     
     APPLICATION_TEXT_SPLIT_CHUNK_SIZE = os.getenv("APPLICATION_TEXT_SPLIT_CHUNK_SIZE",1000)

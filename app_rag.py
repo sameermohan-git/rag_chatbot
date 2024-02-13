@@ -4,15 +4,17 @@ import os
 import random
 #from question_generator import generate_questions
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
-
+from langchain_community.embeddings import OpenAIEmbeddings
+from langchain.document_loaders import UnstructuredFileLoader
 from langchain_openai import ChatOpenAI
 from langchain.chains.question_answering import load_qa_chain
 from langchain.chains import RetrievalQA
+from langchain.chains import ConversationalRetrievalChain
+from langchain.prompts import PromptTemplate
 from streamlit_chat import message
 
 import pinecone
-from langchain_community.vectorstores import Pinecone
+from langchain_community.vectorstores import Pinecone as PineconeStore
 
 #import utils
 import openai
@@ -27,7 +29,8 @@ openai.api_key  = os.getenv('OPENAI_API_KEY')
 
 # Initialize LangChain LLM and Memory
 llm_model = "gpt-3.5-turbo-0613"
-llm = ChatOpenAI(temperature=0.0, model=llm_model)
+llm = ChatOpenAI(temperature=0.0, 
+                 model=llm_model)
  
 PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
 PINECONE_INDEX_NAME="rag-level5-idx"
@@ -67,9 +70,9 @@ def cs_body():
     if 'retriever' not in st.session_state:
         with st.spinner("Loading existing data..."):
             index_name = PINECONE_INDEX_NAME
-            embeddings = OpenAIEmbeddings(openai_api_key=openai.api_key)
-            docsearch = Pinecone.from_existing_index(index_name, embeddings)
-            st.session_state.retriever = docsearch.as_retriever()
+            embeddings_model = OpenAIEmbeddings(openai_api_key=openai.api_key)
+            vectordb = PineconeStore.from_existing_index(index_name, embeddings_model)
+            st.session_state.retriever = return_store_retriever(vectordb)
         #st.info("PDF already processed. Using existing data.")
         st.session_state.pdf_processed = True
     
@@ -96,12 +99,19 @@ def cs_sidebar():
     uploaded_file = st.sidebar.file_uploader("Upload your PDF here", type="pdf")
     if uploaded_file:
         file_name = uploaded_file.name
+        embeddings_model = OpenAIEmbeddings(
+                                    openai_api_key=openai.api_key,
+                                    deployment="text-embedding-3-small",
+                                    model="text-embedding-3-small", 
+                                    chunk_size=16, 
+                                    request_timeout=30,
+                                    max_retries=3)
         if not has_been_processed(file_name):
             with st.spinner("Processing PDF..."):
-                pages = extract_text_from_pdf(uploaded_file)
-                embeddings_model = OpenAIEmbeddings(openai_api_key=openai.api_key)
+                pages = extract_text_from_pdf_unstructured(uploaded_file)
+                #embeddings_model = OpenAIEmbeddings(openai_api_key=openai.api_key)
                 vectordb = embed_and_store(pages, embeddings_model)
-                st.session_state.retriever = vectordb.as_retriever()
+                st.session_state.retriever = return_store_retriever(vectordb)
                 mark_as_processed(file_name)
                 st.sidebar.success("PDF Processed and Stored!")
                 st.session_state.pdf_processed = True
@@ -109,14 +119,25 @@ def cs_sidebar():
             if 'retriever' not in st.session_state:
                 with st.spinner("Loading existing data..."):
                     index_name = PINECONE_INDEX_NAME
-                    embeddings = OpenAIEmbeddings(openai_api_key=openai.api_key)
-                    docsearch = Pinecone.from_existing_index(index_name, embeddings)
-                    st.session_state.retriever = docsearch.as_retriever()
+                    #embeddings = OpenAIEmbeddings(openai_api_key=openai.api_key)
+                    vectordb = PineconeStore.from_existing_index(index_name, embeddings_model)
+                    st.session_state.retriever = return_store_retriever(vectordb)
                     st.info("PDF already processed. Using existing data.")
                     st.session_state.pdf_processed = True
             else:
                 st.sidebar.info("PDF already processed!")
     return None
+
+def extract_text_from_pdf_unstructured(uploaded_file):
+    loader = UnstructuredFileLoader(uploaded_file, mode="paged")
+    
+    text_splitter_tik = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+        encoding_name="cl100k_base",
+        chunk_size=1000, 
+        chunk_overlap=200
+    )
+    pages = loader.load_and_split(text_splitter_tik)
+    return pages
 
 
 def extract_text_from_pdf(uploaded_file):
@@ -126,8 +147,13 @@ def extract_text_from_pdf(uploaded_file):
 
 def embed_and_store(pages, embeddings_model):
     # Embedding the documents and storing them in Pinecone
-    docsearch = Pinecone.from_texts(pages, embeddings_model, index_name=PINECONE_INDEX_NAME)
+    docsearch = PineconeStore.from_documents(pages, 
+                                    embeddings_model, 
+                                    index_name=PINECONE_INDEX_NAME)
     return docsearch
+
+def return_store_retriever(vectordb):
+    return vectordb.as_retriever(search_kwargs={'k': 10, 'fetch_k': 30, 'lambda_mult':0.75})
 
 def save_questions_to_file(questions, filename="generated_questions.txt", num_questions=20):
     # Ensure we don't exceed the number of available questions
@@ -164,9 +190,30 @@ def handle_enter():
             st.session_state.chat_history.append(("You", user_input))
             with st.spinner("Please wait..."):  # Show a loading spinner
                 try:
-                    qa = RetrievalQA.from_chain_type(llm, chain_type="stuff", retriever=st.session_state.retriever)
-                    bot_response = qa.run(user_input)
-                    st.session_state.chat_history.append(("Bot", bot_response))
+                    #qa = RetrievalQA.from_chain_type(llm, 
+                     #                                chain_type="stuff", 
+                      #                               retriever=st.session_state.retriever)
+                    #bot_response = qa.run(user_input)
+
+                    # Adapt if needed
+                    CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template("""Given the following conversation and a follow up question, 
+                    rephrase the follow up question to be a standalone question.
+
+                    Chat History:
+                    {chat_history}
+                    Follow Up Input: {question}
+                    Standalone question:""")
+
+                    qa = ConversationalRetrievalChain.from_llm(llm=llm,
+                                                        retriever=st.session_state.retriever,
+                                                        condense_question_prompt=CONDENSE_QUESTION_PROMPT,
+                                                        return_source_documents=True,
+                                                        verbose=True)
+        
+                    chat_history = []
+                    result = qa({"question": user_input, "chat_history": chat_history})
+                    sources = [doc.metadata for doc in result["source_documents"]]
+                    st.session_state.chat_history.append(("Bot", result))
                 except Exception as e:
                     st.session_state.chat_history.append(("Bot", f"Error - {e}"))
             st.session_state.user_input = ""  # Clear the input box after processing
