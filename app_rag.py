@@ -208,8 +208,7 @@ def handle_enter():
                                                         return_source_documents=True,
                                                         verbose=True)
                     result = qa({"question": user_input, "chat_history": st.session_state.chat_history})
-                    sources = [doc.metadata for doc in result["source_documents"]]
-                    filenames = "["+"][".join(set([x.metadata['filenames'] for x in result['source_documents']]))+"]" 
+                    sources = [doc.metadata for doc in result["source_documents"]] 
                     print("sources:" ,sources)
                     response = result["answer"]
                     st.session_state.chat_history.append(("Bot", response))
