@@ -214,9 +214,11 @@ def handle_enter():
                                                         verbose=True)
         
                     chat_history = []
-                    result = qa({"question": user_input, "chat_history": chat_history})
+                    result = qa({"question": user_input, "chat_history": st.session_state.chat_history})
                     sources = [doc.metadata for doc in result["source_documents"]]
-                    st.session_state.chat_history.append(("Bot", result))
+                    st.session_state.chat_history.append(("Bot", result["answer"]))
+                    #st.session_state['past'].append(user_input)
+                    #st.session_state['generated'].append(output)
                 except Exception as e:
                     st.session_state.chat_history.append(("Bot", f"Error - {e}"))
             st.session_state.user_input = ""  # Clear the input box after processing
