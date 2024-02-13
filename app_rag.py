@@ -16,7 +16,6 @@ from streamlit_chat import message
 import pinecone
 from langchain_community.vectorstores import Pinecone as PineconeStore
 
-from data_parser import DataParser
 #import utils
 import openai
 from dotenv import load_dotenv, find_dotenv
