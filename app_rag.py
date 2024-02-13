@@ -153,7 +153,10 @@ def embed_and_store(pages, embeddings_model):
     return docsearch
 
 def return_store_retriever(vectordb):
-    return vectordb.as_retriever(search_kwargs={'k': 10, 'fetch_k': 30, 'lambda_mult':0.75})
+    return vectordb.as_retriever(search_type="mmr",
+                                search_kwargs={'k': 5, 
+                                               'fetch_k': 50,
+                                               'lambda_mult': 0.75})
 
 def save_questions_to_file(questions, filename="generated_questions.txt", num_questions=20):
     # Ensure we don't exceed the number of available questions
