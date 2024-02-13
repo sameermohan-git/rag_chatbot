@@ -209,9 +209,11 @@ def handle_enter():
                                                         verbose=True)
                     result = qa({"question": user_input, "chat_history": st.session_state.chat_history})
                     sources = [doc.metadata for doc in result["source_documents"]]
-                    st.session_state.chat_history.append(("Bot", result["answer"]+ '\n sources:' + {set(sources)}))
+                    filenames = "["+"][".join(set([x.metadata['filepath'] for x in result['source_documents']]))+"]" 
+                    response = result["answer"]+ '\n sources:' + {str(filenames)}
+                    st.session_state.chat_history.append("Bot", response)
                 except Exception as e:
-                    st.session_state.chat_history.append(("Bot", f"Error - {e}"))
+                    st.session_state.chat_history.append("Bot", f"Error - {e}")
             st.session_state.user_input = ""  # Clear the input box after processing
 
 def img_to_bytes(img_path):
