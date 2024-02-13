@@ -209,7 +209,7 @@ def handle_enter():
                                                         verbose=True)
                     result = qa({"question": user_input, "chat_history": st.session_state.chat_history})
                     sources = [doc.metadata for doc in result["source_documents"]] 
-                    print("sources:" ,sources)
+                    message("sources:" ,sources)
                     response = result["answer"]
                     st.session_state.chat_history.append(("Bot", response))
                 except Exception as e:
