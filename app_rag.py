@@ -73,7 +73,6 @@ def cs_body():
             embeddings_model = OpenAIEmbeddings(openai_api_key=openai.api_key)
             vectordb = PineconeStore.from_existing_index(index_name, embeddings_model)
             st.session_state.retriever = return_store_retriever(vectordb)
-        #st.info("PDF already processed. Using existing data.")
         st.session_state.pdf_processed = True
     
     if st.session_state.pdf_processed:
@@ -211,6 +210,8 @@ def handle_enter():
                     sources = [doc.metadata for doc in result["source_documents"]] 
                     message("sources:" ,sources)
                     response = result["answer"]
+                    response += "\nSource - "
+                    response += str(sources)
                     st.session_state.chat_history.append(("Bot", response))
                 except Exception as e:
                     st.session_state.chat_history.append(("Bot", f"Error - {e}"))
