@@ -193,11 +193,6 @@ def handle_enter():
             st.session_state.chat_history.append(("You", user_input))
             with st.spinner("Please wait..."):  # Show a loading spinner
                 try:
-                    #qa = RetrievalQA.from_chain_type(llm, 
-                     #                                chain_type="stuff", 
-                      #                               retriever=st.session_state.retriever)
-                    #bot_response = qa.run(user_input)
-
                     # Adapt if needed
                     CONDENSE_QUESTION_PROMPT = PromptTemplate.from_template("""Given the following conversation and a follow up question, 
                     rephrase the follow up question to be a standalone question.
@@ -212,13 +207,9 @@ def handle_enter():
                                                         condense_question_prompt=CONDENSE_QUESTION_PROMPT,
                                                         return_source_documents=True,
                                                         verbose=True)
-        
-                    chat_history = []
                     result = qa({"question": user_input, "chat_history": st.session_state.chat_history})
                     sources = [doc.metadata for doc in result["source_documents"]]
-                    st.session_state.chat_history.append(("Bot", result["answer"]))
-                    #st.session_state['past'].append(user_input)
-                    #st.session_state['generated'].append(output)
+                    st.session_state.chat_history.append(("Bot", result["answer"]+ '\n'+ result["source_documents"]))
                 except Exception as e:
                     st.session_state.chat_history.append(("Bot", f"Error - {e}"))
             st.session_state.user_input = ""  # Clear the input box after processing
